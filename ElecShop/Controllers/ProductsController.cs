@@ -66,5 +66,98 @@ namespace ElecShop.Controllers
             return RedirectToAction("Index","Products");
         }
 
+        public IActionResult Edit(int id)
+        {
+            var product = _context.Products.Find(id);
+
+            if (product is null)
+            {
+                return RedirectToAction("Index", "Products");
+            }
+
+            var productDto = new ProductDto()
+            {
+                Name = product.Name,
+                Brand = product.Brand,
+                Category = product.Category,
+                Price = product.Price,
+                Description = product.Description
+            };
+
+            ViewData["ProductId"] = product.Id;
+            ViewData["ImageFileName"] = product.ImageFileName;
+            ViewData["CreatedAt"] = product.CreatedAt.ToString("dd/MM/yyyy");
+
+            return View(productDto);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(int id, ProductDto productDto) 
+        {
+            var product = _context.Products.Find(id);
+
+            if (product is null)
+            {
+                return RedirectToAction("Index", "Products");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["ProductId"] = product.Id;
+                ViewData["ImageFileName"] = product.ImageFileName;
+                ViewData["CreatedAt"] = product.CreatedAt.ToString("dd/MM/yyyy");
+
+                return View(productDto);
+            }
+
+            string newFileName = product.ImageFileName;
+            if (productDto.ImageFile is not null)
+            {
+                newFileName = DateTime.Now.ToString("ddMMyyyyHHmmssfff");
+                newFileName += Path.GetExtension(productDto.ImageFile.FileName);
+
+                string imageFullPath = _webHostEnvironment.WebRootPath + "/products/" + newFileName;
+
+                using (var stream = System.IO.File.Create(imageFullPath))
+                {
+                    productDto.ImageFile.CopyTo(stream);
+                }
+
+                string oldImageFullPath = _webHostEnvironment.WebRootPath + "/products/" + product.ImageFileName;
+                System.IO.File.Delete(oldImageFullPath);
+            }
+
+            product.Name = productDto.Name;
+            product.Brand = productDto.Brand;
+            product.Category = productDto.Category;
+            product.Price = productDto.Price;
+            product.Description = productDto.Description;
+            product.ImageFileName = newFileName;
+
+            _context.SaveChanges();
+
+            return RedirectToAction("Index", "Products");
+        }
+
+        public IActionResult Delete(int id)
+        {
+            var product = _context.Products.Find(id);
+
+            if (product is null)
+            {
+                return RedirectToAction("Index", "Products");
+            }
+
+            string imageFullPath = _webHostEnvironment.WebRootPath + "/products/" + product.ImageFileName;
+            System.IO.File.Delete(imageFullPath);
+
+            _context.Products.Remove(product);
+            _context.SaveChanges(true);
+
+            return RedirectToAction("Index", "Products");
+        }
+        
+
+
     }
 }
