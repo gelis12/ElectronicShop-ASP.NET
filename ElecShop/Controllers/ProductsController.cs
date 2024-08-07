@@ -31,7 +31,7 @@ namespace ElecShop.Controllers
         {
             if (productDto.ImageFile == null)
             {
-                ModelState.AddModelError("ImageFile", "Imaginea este necesara");
+                ModelState.AddModelError("ImageFile", "The image is necessary.");
             }
 
             if (!ModelState.IsValid)
