@@ -1,6 +1,8 @@
 ﻿@model List<Product>
 
 @{
+    int pageIndex = (int)ViewData["PageIndex"]!;
+    int totalPages = (int)ViewData["TotalPages"]!;
 }
 
 <h2 class="text-center mb-5">List of Products</h2>
@@ -40,9 +42,23 @@
                 <td>@product.CreatedAt.ToString("dd/MM/yyyy")</td>
                 <td style="white-space:nowrap">
                     <a class="btn btn-primary btn-sm" asp-controller="Products" asp-action="Edit" asp-route-id="@product.Id">Edit</a>
-                    <a class="btn btn-danger btn-sm" asp-controller="Products" asp-action="Delete" asp-route-id="@product.Id">Delete</a>
+                    <a class="btn btn-danger btn-sm" asp-controller="Products" asp-action="Delete" asp-route-id="@product.Id" onclick="return confirm('Are you sure you want to delete this item?')">Delete</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<nav >
+    <ul class="pagination">
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            string active = "";
+            if (i == pageIndex)
+            {
+                active = "active";
+            }
+            <li class="page-item @active"><a class="page-link" asp-route-pageIndex="@i">@i</a></li>
+        }
+    </ul>
+</nav>

@@ -8,6 +8,7 @@ namespace ElecShop.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly int pageSize = 5;
 
         public ProductsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
@@ -15,9 +16,25 @@ namespace ElecShop.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int pageIndex)
         {
-            var products = _context.Products.OrderByDescending(p=>p.Id).ToList();
+            IQueryable<Product> querry = _context.Products;
+            querry = querry.OrderByDescending(p => p.Id);
+
+            if (pageIndex < 1)
+            {
+                pageIndex = 1;
+            }
+
+            decimal count = querry.Count();
+            int totalPages = (int)Math.Ceiling(count / pageSize);
+            querry = querry.Skip((pageIndex - 1) * pageSize).Take(pageSize);
+
+            var products = querry.ToList();
+
+            ViewData["PageIndex"] = pageIndex;
+            ViewData["TotalPages"] = totalPages;
+
             return View(products);
         }
 
