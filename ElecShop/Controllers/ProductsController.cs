@@ -16,9 +16,16 @@ namespace ElecShop.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public IActionResult Index(int pageIndex)
+        public IActionResult Index(int pageIndex, string? search)
         {
             IQueryable<Product> querry = _context.Products;
+
+            if (search is not null)
+            {
+                querry = querry.Where(p => p.Name.Contains(search) || p.Brand.Contains(search));
+            }
+
+
             querry = querry.OrderByDescending(p => p.Id);
 
             if (pageIndex < 1)
@@ -34,6 +41,8 @@ namespace ElecShop.Controllers
 
             ViewData["PageIndex"] = pageIndex;
             ViewData["TotalPages"] = totalPages;
+
+            ViewData["Search"] = search ?? "";
 
             return View(products);
         }
