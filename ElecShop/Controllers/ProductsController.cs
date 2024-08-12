@@ -16,7 +16,7 @@ namespace ElecShop.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        public IActionResult Index(int pageIndex, string? search)
+        public IActionResult Index(int pageIndex, string? search, string? column, string? orderBy)
         {
             IQueryable<Product> querry = _context.Products;
 
@@ -25,8 +25,89 @@ namespace ElecShop.Controllers
                 querry = querry.Where(p => p.Name.Contains(search) || p.Brand.Contains(search));
             }
 
+            string[] validColumns = { "Id", "Name", "Brand", "Category", "Price", "CreatedAt" };
+            string[] validOrderBy = { "desc", "asc" };
 
-            querry = querry.OrderByDescending(p => p.Id);
+            if (!validColumns.Contains(column))
+            {
+                column = "Id";
+            }
+
+            if (!validOrderBy.Contains(orderBy))
+            {
+                orderBy = "desc";
+            }
+
+
+
+            switch (column)
+            {
+                case "Name":
+                    if (orderBy == "asc")
+                    {
+                        querry = querry.OrderBy(p => p.Name);
+                    }
+                    else
+                    {
+                        querry = querry.OrderByDescending(p => p.Name);
+                    }
+                    break;
+                case "Brand":
+                    if (orderBy == "asc")
+                    {
+                        querry = querry.OrderBy(p => p.Brand);
+                    }
+                    else
+                    {
+                        querry = querry.OrderByDescending(p => p.Brand);
+                    }
+                    break;
+                case "Category":
+                    if (orderBy == "asc")
+                    {
+                        querry = querry.OrderBy(p => p.Category);
+                    }
+                    else
+                    {
+                        querry = querry.OrderByDescending(p => p.Category);
+                    }
+                    break;
+                case "Price":
+                    if (orderBy == "asc")
+                    {
+                        querry = querry.OrderBy(p => p.Price);
+                    }
+                    else
+                    {
+                        querry = querry.OrderByDescending(p => p.Price);
+                    }
+                    break;
+                case "CreatedAt":
+                    if (orderBy == "asc")
+                    {
+                        querry = querry.OrderBy(p => p.CreatedAt);
+                    }
+                    else
+                    {
+                        querry = querry.OrderByDescending(p => p.CreatedAt);
+                    }
+                    break;
+                default:
+                    if (orderBy == "asc")
+                    {
+                        querry = querry.OrderBy(p => p.Id);
+                    }
+                    else
+                    {
+                        querry = querry.OrderByDescending(p => p.Id);
+                    }
+                    break;
+            }
+            
+
+            //querry = querry.OrderByDescending(p => p.Id);
+
+
 
             if (pageIndex < 1)
             {
@@ -43,6 +124,9 @@ namespace ElecShop.Controllers
             ViewData["TotalPages"] = totalPages;
 
             ViewData["Search"] = search ?? "";
+
+            ViewData["Column"] = column;
+            ViewData["OrderBy"] = orderBy;
 
             return View(products);
         }
