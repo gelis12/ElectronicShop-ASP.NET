@@ -70,5 +70,19 @@ namespace ElecShop.Controllers
 
             return View(storeSearchModel);
         }
+
+        public IActionResult Details(int id)
+        {
+            var product = _context.Products.Find(id);
+
+            if (product is null)
+            {
+                return RedirectToAction("Index", "Store");
+            }
+
+
+
+            return View(product);
+        }
     }
 }
