@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ElecShop.Controllers
 {
+    [Route("/Admin/[controller]/{action=Index}/{id?}")]
     public class ProductsController : Controller
     {
         private readonly ApplicationDbContext _context;
