@@ -12,11 +12,36 @@ namespace ElecShop.Controllers
         {
             _context = context;
         }
-        public IActionResult Index(int pageIndex)
+        public IActionResult Index(int pageIndex, string? search, string? brand, string? category, string? sort)
         {
             IQueryable<Product> query = _context.Products;
 
-            query = query.OrderByDescending(p => p.Id);
+            if (search is not null && search.Length > 0)
+            {
+                query = query.Where(p => p.Name.Contains(search));
+            }
+
+            if (brand is not null && brand.Length > 0)
+            {
+                query = query.Where(p => p.Brand.Contains(brand));
+            }
+
+            if (category is not null && category.Length > 0)
+            {
+                query = query.Where(p => p.Category.Contains(category));
+            }
+
+            switch (sort)
+            {
+                case "price_asc":
+                    query = query.OrderBy(p => p.Price); break;
+                case "price_desc":
+                    query = query.OrderByDescending(p => p.Price); break;
+                default:
+                    query = query.OrderByDescending(p => p.Id); break;
+            }
+
+            //query = query.OrderByDescending(p => p.Id);
 
             
 
@@ -35,7 +60,15 @@ namespace ElecShop.Controllers
             ViewBag.PageIndex = pageIndex;
             ViewBag.TotalPages = totalPages;
 
-            return View();
+            var storeSearchModel = new StoreSearchModel()
+            {
+                Search = search,
+                Brand = brand,
+                Category = category,
+                Sort = sort
+            };
+
+            return View(storeSearchModel);
         }
     }
 }
