@@ -19,5 +19,43 @@ namespace ElecShop.Controllers
         {
             return View();
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterDto registerDto)
+        {
+            if (!ModelState.IsValid) 
+            { 
+                return View(registerDto);
+            }
+
+            var user = new ApplicationUser()
+            {
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                UserName = registerDto.EmailAddress,
+                Email = registerDto.EmailAddress,
+                PhoneNumber = registerDto.PhoneNumber,
+                Address = registerDto.Address,
+                CreatedAt = DateTime.Now
+            };
+
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
+
+            if (result.Succeeded) 
+            {
+                await _userManager.AddToRoleAsync(user, "client");
+
+                await _signInManager.SignInAsync(user,false);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
+            return View(registerDto);
+        }
     }
 }
