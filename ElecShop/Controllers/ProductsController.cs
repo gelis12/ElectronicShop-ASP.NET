@@ -1,9 +1,11 @@
 ﻿using ElecShop.Models;
 using ElecShop.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElecShop.Controllers
 {
+    [Authorize(Roles = "admin")]
     [Route("/Admin/[controller]/{action=Index}/{id?}")]
     public class ProductsController : Controller
     {

@@ -1,4 +1,5 @@
 ﻿using ElecShop.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,12 +18,21 @@ namespace ElecShop.Controllers
 
         public IActionResult Register()
         {
+            if (_signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
+            if (_signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (!ModelState.IsValid) 
             { 
                 return View(registerDto);
@@ -70,12 +80,21 @@ namespace ElecShop.Controllers
 
         public IActionResult Login()
         {
+            if (_signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
+            if (_signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(loginDto);
@@ -93,6 +112,18 @@ namespace ElecShop.Controllers
             }
 
             return View(loginDto);
+        }
+
+
+        [Authorize]
+        public IActionResult Profile()
+        {
+            return View();
+        }
+
+        public IActionResult AccessDenied()
+        {
+            return RedirectToAction("Index", "Home");
         }
     }
 }
