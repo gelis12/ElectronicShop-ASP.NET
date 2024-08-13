@@ -4,11 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElecShop.Services
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public DbSet<Product> Products { get; set; }
+        
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        public DbSet<Product> Products { get; set; }
     }
 }
