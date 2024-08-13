@@ -57,5 +57,20 @@ namespace ElecShop.Controllers
 
             return View(registerDto);
         }
+
+
+        public async Task<IActionResult> Logout()
+        {
+            if (_signInManager.IsSignedIn(User))
+            {
+                await _signInManager.SignOutAsync();
+            }
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Login()
+        {
+            return View();
+        }
     }
 }
