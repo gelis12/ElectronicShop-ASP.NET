@@ -116,9 +116,63 @@ namespace ElecShop.Controllers
 
 
         [Authorize]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
-            return View();
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser is null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var profileDto = new ProfileDto()
+            {
+                FirstName = appUser.FirstName,
+                LastName = appUser.LastName,
+                EmailAddress = appUser.Email ?? "",
+                PhoneNumber = appUser.PhoneNumber,
+                Address = appUser.Address,
+            };
+
+            return View(profileDto);
+        }
+        
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Profile(ProfileDto profileDto)
+        {
+            if (!ModelState.IsValid) 
+            {
+                ViewBag.ErrorMessage = "Please fill all the required fields with valid values";
+                return View(profileDto);
+            }
+
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser is null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            appUser.FirstName = profileDto.FirstName;
+            appUser.LastName = profileDto.LastName;
+            appUser.UserName = profileDto.EmailAddress;
+            appUser.Email = profileDto.EmailAddress;
+            appUser.PhoneNumber = profileDto.PhoneNumber;
+            appUser.Address = profileDto.Address;
+
+            var result = await _userManager.UpdateAsync(appUser);
+
+            if (result.Succeeded)
+            {
+                ViewBag.SuccessMessage = "Profile updated successfully";
+            }
+            else
+            {
+                ViewBag.ErrorMessage = "Unable to update the profile: " + result.Errors.First().Description;
+            }
+
+            ViewBag.SuccessMessage = "Profile updated successfully";
+
+            return View(profileDto);
         }
 
         public IActionResult AccessDenied()
