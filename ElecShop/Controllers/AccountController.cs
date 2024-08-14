@@ -1,4 +1,5 @@
 ﻿using ElecShop.Models;
+using ElecShop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,11 +11,13 @@ namespace ElecShop.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IConfiguration _configuration;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
         }
 
         public IActionResult Register()
@@ -243,17 +246,26 @@ namespace ElecShop.Controllers
             }
 
             var user = await _userManager.FindByEmailAsync(email);
+
+
             if (user is not null)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(user);
                 string resetUrl = Url.ActionLink("ResetPassword", "Account", new { token }) ?? "URL Error";
 
-                Console.WriteLine("Password reset link: " + resetUrl);
+                string senderName = _configuration["BrevoSettings:SenderName"] ?? "";
+                string senderEmail = _configuration["BrevoSettings:SenderEmail"] ?? "";
+                string userName = user.FirstName + " " + user.LastName;
+                string subject = "Password Reset";
+                string message = $"Dear {userName}, \n\n You can reset your password using the following link: \n\n {resetUrl} \n\n Best Regards";
+
+                EmailSender.SendEmail(senderName, senderEmail, userName, email, message, subject);
             }
 
             ViewBag.SuccessMessage = "Please check your Email account and click on the Password Reset link!";
 
             return View();
         }
+
     }
 }
