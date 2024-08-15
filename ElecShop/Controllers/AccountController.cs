@@ -267,5 +267,64 @@ namespace ElecShop.Controllers
             return View();
         }
 
+
+        public IActionResult ResetPassword(string? token)
+        {
+            if (_signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (token is null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string? token, PasswordResetDto model)
+        {
+
+            if (_signInManager.IsSignedIn(User))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (token is null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user is null)
+            {
+                ViewBag.ErrorMessage = "Token is not valid!";
+                return View(model);
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+
+            if (result.Succeeded) 
+            {
+                ViewBag.SuccessMessage = "Password reset successfully!";
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+
+            return View(model);
+        }
+
     }
 }
