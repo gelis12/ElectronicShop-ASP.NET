@@ -43,5 +43,25 @@ namespace ElecShop.Controllers
 
             return View(users);
         }
+
+        public async Task<IActionResult> Details(string? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction("Index", "Users");
+            }
+
+            var appUsers = await _userManager.FindByIdAsync(id);
+
+            if (appUsers is null)
+            {
+                return RedirectToAction("Index", "Users");
+            }
+
+            ViewBag.Roles = await _userManager.GetRolesAsync(appUsers);
+
+
+            return View(appUsers);
+        }
     }
 }
