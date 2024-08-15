@@ -115,6 +115,39 @@ namespace ElecShop.Controllers
 
         }
 
+        public async Task<IActionResult> DeleteAccount(string? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction("Index", "Users");
+            }
+
+            var appUser = await _userManager.FindByIdAsync(id);
+
+            if (appUser is null)
+            {
+                return RedirectToAction("Index", "Users");
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            if (currentUser!.Id == appUser.Id)
+            {
+                TempData["ErrorMessage"] = "You cannot delete your own account!";
+                return RedirectToAction("Details", "Users", new { id });
+            }
+
+            var result = await _userManager.DeleteAsync(appUser);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Index", "Users");
+            }
+
+            TempData["ErrorMessage"] = $"Unable to delete this account: {result.Errors.First().Description}";
+            return RedirectToAction("Details", "Users", new {id});
+        }
+
 
 
 
