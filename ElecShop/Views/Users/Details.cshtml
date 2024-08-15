@@ -8,6 +8,21 @@
         <h2 class="text-center mb-3">User Details</h2>
         <hr />
 
+        @if (TempData["ErrorMessage"] is not null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>@TempData["ErrorMessage"]</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        else if (TempData["SuccessMessage"] is not null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>@TempData["SuccessMessage"]</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <div class="row mb-2">
             <div class="col-sm-4">First Name</div>
             <div class="col-sm-8">@Model.FirstName</div>
@@ -56,6 +71,8 @@
                     }
 
                     <span class="badge rounded-pill @color">@rolesStr</span>
+
+                    <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#roleModal">Edit</button>
                 }
 
             </div>
@@ -74,6 +91,31 @@
             <button type="button" class="btn btn-danger">Delete</button>
         </div>
 
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Edit User Role</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="get" asp-controller="Users" asp-action="EditRole">
+                    <input type="hidden" value="@Model.Id" name="id" />
+                    <label>Select user role</label>
+                    <select class="form-select mb-2" name="newRole" asp-items="@ViewBag.SelectItems"></select>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 

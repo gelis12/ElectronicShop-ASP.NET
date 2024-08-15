@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ElecShop.Controllers
 {
@@ -61,7 +62,62 @@ namespace ElecShop.Controllers
             ViewBag.Roles = await _userManager.GetRolesAsync(appUsers);
 
 
+            var availableRoles = _roleManager.Roles.ToList();
+            var items = new List<SelectListItem>();
+
+            foreach (var role in availableRoles)
+            {
+                items.Add(
+                    new SelectListItem
+                    {
+                        Text = role.NormalizedName,
+                        Value = role.Name,
+                        Selected = await _userManager.IsInRoleAsync(appUsers, role.Name!)
+                    }
+                );
+            }
+
+            ViewBag.SelectItems = items;
+
             return View(appUsers);
         }
+
+        public async Task<IActionResult> EditRole(string? id, string? newRole)
+        {
+            if (id is null || newRole is null)
+            {
+                return RedirectToAction("Index", "Users");
+            }
+
+            var roleExists = await _roleManager.RoleExistsAsync(newRole);
+            var appUser = await _userManager.FindByIdAsync(id);
+
+            if (appUser is null || roleExists is false)
+            {
+                return RedirectToAction("Index", "Users");
+            }
+
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser!.Id == appUser.Id)
+            {
+                TempData["ErrorMessage"] = "You cannot update your own role!";
+                return RedirectToAction("Details", "Users", new { id });
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(appUser);
+            await _userManager.RemoveFromRolesAsync(appUser, userRoles);
+            await _userManager.AddToRoleAsync(appUser, newRole);
+
+            TempData["SuccessMessage"] = "User Role updated successfully!";
+
+            return RedirectToAction("Details", "Users", new { id });
+
+
+        }
+
+
+
+
+
     }
 }
