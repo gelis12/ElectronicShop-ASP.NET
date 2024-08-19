@@ -52,7 +52,7 @@
                 <p>Brand: @product.Brand, Category: @product.Category</p>
                 <h4 class="mb-3">@(product.Price)$</h4>
                 <a type="button" class="btn btn-primary btn-sm mb-2" asp-controller="Store" asp-action="Details" asp-route-id="@product.Id" role="button">Details</a>
-                <button type="button" class="btn btn-warning btn-sm mb-2">
+                <button type="button" class="btn btn-warning btn-sm mb-2" onclick="addToCart(this, @product.Id)">
                     Add to Cart <i class="bi bi-cart4"></i>
                 </button>
             </div>

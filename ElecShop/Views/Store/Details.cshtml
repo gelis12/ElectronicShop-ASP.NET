@@ -9,7 +9,7 @@
     <div class="col-md-8">
         <h3 class="mb-3">@Model.Name</h3>
         <h3 class="mb-3">@(Model.Price)$</h3>
-        <button type="button" class="btn btn-warning btn-sm">
+        <button type="button" class="btn btn-warning btn-sm" onclick="addToCart(this, @Model.Id)">
             Add to Cart <i class="bi bi-cart4"></i>
         </button>
 
