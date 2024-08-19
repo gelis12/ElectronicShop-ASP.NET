@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
+﻿using ElecShop.Models;
+using System.Text.Json;
 
 namespace ElecShop.Services
 {
-    public class CartHelper
+    public static class CartHelper
     {
         public static Dictionary<int, int> GetCartDictionary(HttpRequest request, HttpResponse response)
         {
@@ -42,6 +43,45 @@ namespace ElecShop.Services
             }
 
             return cartSize;
+        }
+
+        public static List<OrderItem> GetCartItems(HttpRequest request, HttpResponse response, ApplicationDbContext context)
+        {
+            var cartItems = new List<OrderItem>();
+            var cartDictionary = GetCartDictionary(request, response);
+
+            foreach (var pair in cartDictionary)
+            {
+                int productId = pair.Key;
+                int quantity = pair.Value;
+                var product = context.Products.Find(productId);
+                if (product is null)
+                {
+                    continue;
+                }
+
+                var item = new OrderItem
+                {
+                    Quantity = quantity,
+                    UnitPrice = product.Price,
+                    Product = product
+                };
+
+                cartItems.Add(item);
+            }
+
+            return cartItems;
+        }
+
+
+        public static decimal GetSubtotal(List<OrderItem> cartItems) 
+        {
+            decimal subtotal = 0;
+            foreach (var item in cartItems)
+            {
+                subtotal += item.Quantity * item.UnitPrice;
+            }
+            return subtotal;
         }
     }
 }
