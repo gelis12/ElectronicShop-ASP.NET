@@ -26,7 +26,6 @@ namespace ElecShop.Services
                 {
                     response.Cookies.Delete("shopping_cart");
                 }
-                throw;
             }
 
             return new Dictionary<int, int>();
