@@ -44,5 +44,20 @@ namespace ElecShop.Controllers
 
             return View();
         }
+
+        public IActionResult Details(int id)
+        {
+            var order = _context.Orders.Include(o => o.Client).Include(o => o.Items)
+                .ThenInclude(oi => oi.Product).FirstOrDefault(o => o.Id == id);
+
+            if (order is null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.NumOrders = _context.Orders.Where(o => o.ClientId == order.ClientId).Count();
+
+            return View(order);
+        }
     }
 }
