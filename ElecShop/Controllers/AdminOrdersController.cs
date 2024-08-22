@@ -59,5 +59,34 @@ namespace ElecShop.Controllers
 
             return View(order);
         }
+
+        public IActionResult Edit(int id, string? payment_status, string? order_status)
+        {
+            var order = _context.Orders.Find(id);
+            if (order is null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            if (payment_status is null && order_status is null)
+            {
+                return RedirectToAction("Details", new { id });
+            }
+
+            if (payment_status is not null)
+            {
+                order.PaymentStatus = payment_status;
+            }
+
+            if (order_status is not null)
+            {
+                order.OrderStatus = order_status;
+            }
+
+            _context.SaveChanges();
+
+
+            return RedirectToAction("Details", new { id });
+        }
     }
 }
