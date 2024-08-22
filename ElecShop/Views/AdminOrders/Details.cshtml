@@ -96,7 +96,9 @@
 
             <div class="row mb-2 pb-2 border-bottom">
                 <div class="col">Name</div>
-                <div class="col">@($"{Model.Client.FirstName} {Model.Client.LastName}")</div>
+                <div class="col">
+                    <a asp-controller="Users" asp-action="Details" asp-route-id="@Model.Client.Id">@($"{Model.Client.FirstName} {Model.Client.LastName}")</a>
+                </div>
             </div>
 
             <div class="row mb-2 pb-2 border-bottom">
@@ -150,7 +152,9 @@
                         <img src="/products/@item.Product.ImageFileName" width="100" alt="..." />
                     </td>
                     <td>
-                        <h4>@item.Product.Name</h4>
+                        <h4>
+                            <a style="text-decoration: none; color: inherit;" asp-controller="Store" asp-action="Details" asp-route-id="@item.Product.Id">@item.Product.Name</a>
+                        </h4>
                         @item.Product.Category<br />
                         @(item.UnitPrice)$
                     </td>
