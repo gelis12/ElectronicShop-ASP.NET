@@ -1,0 +1,103 @@
+﻿@{
+}
+
+
+<h3 class="text-center mb-4">List of Orders</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Units</th>
+            <th>Total</th>
+            <th>Payment Method</th>
+            <th>Payment Status</th>
+            <th>Order Status</th>
+            <th>Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Order order in ViewBag.Orders)
+        {
+            int count = 0;
+            decimal total = order.ShippingFee;
+
+            foreach (OrderItem item in order.Items)
+            {
+                count += item.Quantity;
+                total += item.Quantity * item.UnitPrice;
+            }
+            string paymentBadgeColor = "bg-danger";
+
+            switch (order.PaymentStatus)
+            {
+                case "pending":
+                    paymentBadgeColor = "bg-warning text-dark";
+                    break;
+                case "accepted":
+                    paymentBadgeColor = "bg-success";
+                    break;
+                case "canceled":
+                    paymentBadgeColor = "bg-secondary";
+                    break;
+            }
+
+            string orderBadgeColor = "bg-danger";
+
+            switch (order.OrderStatus)
+            {
+                case "created":
+                    orderBadgeColor = "bg-warning text-dark";
+                    break;
+                case "accepted":
+                    orderBadgeColor = "bg-success";
+                    break;
+                case "canceled":
+                    orderBadgeColor = "bg-secondary";
+                    break;
+                case "shipped":
+                    orderBadgeColor = "bg-primary";
+                    break;
+                case "delivered":
+                    orderBadgeColor = "bg-success";
+                    break;
+                case "returned":
+                    orderBadgeColor = "bg-info text-dark";
+                    break;
+                case "deleted":
+                    orderBadgeColor = "bg-dark";
+                    break;
+            }
+
+            <tr>
+                <td>@count</td>
+                <td>@(total)$</td>
+                <td>@order.PaymentMethod</td>
+                <td><span class="badge rounded-pill @paymentBadgeColor">@order.PaymentStatus</span></td>
+                <td><span class="badge rounded-pill @orderBadgeColor">@order.OrderStatus</span></td>
+                <td>@order.CreatedAt.ToString("dd.MM.yyyy")</td>
+                <td>
+                    <a class="btn btn-primary btn-sm" asp-controller="ClientOrders" asp-action="Details" asp-route-id="@order.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            string active = "";
+            if (i == ViewBag.PageIndex)
+            {
+                active = "active";
+            }
+            <li class="page-item @active">
+                <a class="page-link" asp-route-pageIndex="@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
