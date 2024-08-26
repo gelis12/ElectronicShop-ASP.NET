@@ -1,37 +1,59 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ElecShop.Models;
+using ElecShop.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using System.Text.Json.Nodes;
 
 namespace ElecShop.Controllers
 {
+    [Authorize]
     public class CheckoutController : Controller
     {
         private string PaypalClientId { get; set; } = "";
         private string PaypalSecret { get; set; } = "";
         private string PaypalUrl { get; set; } = "";
 
-        public CheckoutController(IConfiguration configuration)
+        private readonly decimal _shippingFee;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public CheckoutController(IConfiguration configuration, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             PaypalClientId = configuration["PayPalSettings:ClientId"]!;
             PaypalSecret = configuration["PayPalSettings:Secret"]!;
             PaypalUrl = configuration["PayPalSettings:Url"]!;
+
+            _shippingFee = configuration.GetValue<decimal>("CartSettings:ShippingFee");
+
+            _context = context;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
         {
+
+            List<OrderItem> cartItems = CartHelper.GetCartItems(Request, Response, _context);
+            decimal total = CartHelper.GetSubtotal(cartItems) + _shippingFee;
+
+
+            string deliveryAddress = TempData["DeliveryAddress"] as string ?? "";
+            TempData.Keep();
+
+
+            ViewBag.DeliveryAddress = deliveryAddress;
+            ViewBag.Total = total;
 
             ViewBag.PaypalClientId = PaypalClientId;
             return View();
         }
 
         [HttpPost]
-        public async Task<JsonResult> CreateOrder([FromBody] JsonObject data)
+        public async Task<JsonResult> CreateOrder()
         {
-            var totalAmount = data?["amount"]?.ToString();
-            if (totalAmount is null)
-            {
-                return new JsonResult(new { Id = "" });
-            }
+            List<OrderItem> cartItems = CartHelper.GetCartItems(Request, Response, _context);
+            decimal totalAmount = CartHelper.GetSubtotal(cartItems) + _shippingFee;
 
 
             JsonObject createOrderRequest = new JsonObject();
@@ -87,7 +109,9 @@ namespace ElecShop.Controllers
         public async Task<JsonResult> CompleteOrder([FromBody] JsonObject data)
         {
             var orderId = data?["orderID"]?.ToString();
-            if (orderId is null)
+            var deliveryAddress = data?["deliveryAddress"]?.ToString();
+
+            if (orderId is null || deliveryAddress is null)
             {
                 return new JsonResult("error");
             }
@@ -115,13 +139,44 @@ namespace ElecShop.Controllers
                         string paypalOrderStatus = jsonResponse["status"]?.ToString() ?? "";
                         if (paypalOrderStatus == "COMPLETED")
                         {
+                            await SaveOrderAsync(jsonResponse.ToString(), deliveryAddress);
                             return new JsonResult("success");
+
                         }
                     }
                 }
             }
 
                 return new JsonResult("error");
+        }
+
+        private async Task SaveOrderAsync(string paypalResponse, string deliveryAddress)
+        {
+            var cartItems = CartHelper.GetCartItems(Request, Response, _context);
+
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser is null)
+            {
+                return;
+            }
+
+            var order = new Order
+            {
+                ClientId = appUser.Id,
+                Items = cartItems,
+                ShippingFee = _shippingFee,
+                DeliveryAddress = deliveryAddress,
+                PaymentMethod = "paypal",
+                PaymentStatus = "accepted",
+                PaymentDetails = paypalResponse,
+                OrderStatus = "pending",
+                CreatedAt = DateTime.Now
+            };
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+
+            Response.Cookies.Delete("shopping_cart");
+
         }
 
 

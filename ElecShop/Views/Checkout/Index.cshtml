@@ -7,10 +7,8 @@
 
 <div class="mx-auto p-4 rounded border shadow" style="width: 420px;">
     <h2 class="text-center mb-5">Complete your order</h2>
-    <div class="form-group mb-3">
-        <label class="form-label">Total Amount ($)</label>
-        <input class="form-control" type="number" id="totalAmount" step="0.01" />
-    </div>
+    <p>Total amount: @(ViewBag.Total)$</p>
+    <p>Delivery Address: @ViewBag.DeliveryAddress</p>
     <br />
     <div id="notification-container"></div>
     <div id="paypal-button-container"></div>
@@ -20,13 +18,7 @@
     paypal.Buttons({
         async createOrder() {
             const response = await fetch("@Url.ActionLink("CreateOrder", "Checkout")", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    amount: document.getElementById("totalAmount").value
-                })
+                method: "POST"
             });
 
             const order = await response.json();
@@ -42,7 +34,8 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    orderID: data.orderID
+                    orderID: data.orderID,
+                    deliveryAddress: "@ViewBag.DeliveryAddress"
                 })
             })
 
